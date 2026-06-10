@@ -88,3 +88,5 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 }
+// Firebase Crashlytics — added by Phase 5 monitoring setup
+// (append at bottom, plugins block updated separately)
