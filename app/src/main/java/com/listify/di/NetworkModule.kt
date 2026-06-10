@@ -37,8 +37,8 @@ object NetworkModule {
         OkHttpClient.Builder()
             .addInterceptor(logging)
             .dns(IPv4PreferDns)
-            .connectTimeout(30, TimeUnit.SECONDS)
-            .readTimeout(30, TimeUnit.SECONDS)
+            .connectTimeout(8, TimeUnit.SECONDS)
+            .readTimeout(8, TimeUnit.SECONDS)
             .build()
 
     @Provides @Singleton
