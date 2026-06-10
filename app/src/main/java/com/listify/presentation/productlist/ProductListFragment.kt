@@ -28,7 +28,9 @@ class ProductListFragment : Fragment() {
     private lateinit var productAdapter: ProductAdapter
     private lateinit var skeletonAdapter: SkeletonAdapter
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
+    ): View {
         _binding = FragmentProductListBinding.inflate(inflater, container, false)
         return binding.root
     }
@@ -49,11 +51,18 @@ class ProductListFragment : Fragment() {
             findNavController().navigate(action)
         }
         skeletonAdapter = SkeletonAdapter(count = 6)
+
         val layoutManager = GridLayoutManager(requireContext(), 2)
         layoutManager.spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
-            override fun getSpanSize(position: Int) =
-                if (productAdapter.getItemViewType(position) == 1) 2 else 1
+            override fun getSpanSize(position: Int): Int {
+                val adapter = binding.recyclerView.adapter
+                return if (adapter is ProductAdapter
+                    && adapter.itemCount > position
+                    && adapter.getItemViewType(position) == 1
+                ) 2 else 1
+            }
         }
+
         binding.recyclerView.layoutManager = layoutManager
         binding.recyclerView.adapter = skeletonAdapter
         binding.recyclerView.isVisible = true
@@ -63,7 +72,8 @@ class ProductListFragment : Fragment() {
         binding.searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?) = false
             override fun onQueryTextChange(newText: String?): Boolean {
-                viewModel.updateSearchQuery(newText.orEmpty()); return true
+                viewModel.updateSearchQuery(newText.orEmpty())
+                return true
             }
         })
     }
@@ -77,7 +87,9 @@ class ProductListFragment : Fragment() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 if (dy <= 0) return
                 val lm = recyclerView.layoutManager as GridLayoutManager
-                if (lm.findLastVisibleItemPosition() >= lm.itemCount - 4) viewModel.loadNextPage()
+                if (lm.findLastVisibleItemPosition() >= lm.itemCount - 4) {
+                    viewModel.loadNextPage()
+                }
             }
         })
     }
@@ -101,7 +113,10 @@ class ProductListFragment : Fragment() {
                                 } else {
                                     if (binding.recyclerView.adapter != productAdapter)
                                         binding.recyclerView.adapter = productAdapter
-                                    productAdapter.submitProducts(state.data, viewModel.pagingState.value.isLoadingMore)
+                                    productAdapter.submitProducts(
+                                        state.data,
+                                        viewModel.pagingState.value.isLoadingMore
+                                    )
                                     binding.recyclerView.isVisible = true
                                 }
                             }
@@ -123,5 +138,8 @@ class ProductListFragment : Fragment() {
         }
     }
 
-    override fun onDestroyView() { super.onDestroyView(); _binding = null }
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
 }
