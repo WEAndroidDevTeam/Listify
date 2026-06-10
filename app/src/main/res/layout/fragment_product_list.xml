@@ -16,7 +16,7 @@
         app:iconifiedByDefault="false"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent"/>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"
@@ -28,56 +28,28 @@
         app:layout_constraintTop_toBottomOf="@id/searchView"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent"/>
 
-    <!-- Error group -->
-    <androidx.constraintlayout.widget.Group
-        android:id="@+id/groupError"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+    <include
+        android:id="@+id/layoutEmpty"
+        layout="@layout/layout_empty_state"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
         android:visibility="gone"
-        app:constraint_referenced_ids="tvError,btnRetry" />
-
-    <TextView
-        android:id="@+id/tvError"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/error_loading"
-        android:textSize="16sp"
-        android:textColor="#CC0000"
         app:layout_constraintTop_toBottomOf="@id/searchView"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/btnRetry" />
-
-    <Button
-        android:id="@+id/btnRetry"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/retry"
-        app:layout_constraintTop_toBottomOf="@id/tvError"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent" />
-
-    <!-- Empty group -->
-    <androidx.constraintlayout.widget.Group
-        android:id="@+id/groupEmpty"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:visibility="gone"
-        app:constraint_referenced_ids="tvEmpty" />
-
-    <TextView
-        android:id="@+id/tvEmpty"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/no_products_found"
-        android:textSize="18sp"
-        android:textColor="#888"
-        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <include
+        android:id="@+id/layoutError"
+        layout="@layout/layout_error_state"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@id/searchView"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
