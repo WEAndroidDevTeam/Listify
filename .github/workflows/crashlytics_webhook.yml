@@ -1,0 +1,62 @@
+name: Crashlytics Webhook Receiver
+
+on:
+  # Called by Firebase Crashlytics alert webhook
+  repository_dispatch:
+    types: [new_fatal_issue, new_anr_issue, regression_alert, velocity_alert]
+
+jobs:
+  forward-to-autofix:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Parse Firebase alert and trigger auto-fix
+        run: |
+          python3 << 'PYEOF'
+          import json, urllib.request, os
+
+          payload = json.loads(os.environ.get("PAYLOAD", "{}"))
+          event_type = os.environ.get("EVENT_TYPE", "unknown")
+
+          # Extract crash info from Firebase webhook payload
+          # Firebase Crashlytics webhook format:
+          # https://firebase.google.com/docs/crashlytics/alerts
+          issue = payload.get("issue", {})
+          crash_title = issue.get("title", "Unknown crash")
+          stack_trace = issue.get("subtitle", "") + "\n" + "\n".join(
+              [f.get("className","") + "." + f.get("methodName","") + "(" + f.get("fileName","") + ":" + str(f.get("lineNumber","")) + ")"
+               for f in issue.get("stacktrace", {}).get("frames", [])[:20]]
+          )
+          version = payload.get("affectedVersion", {}).get("displayVersion", "unknown")
+
+          print(f"Crash: {crash_title}")
+          print(f"Version: {version}")
+          print(f"Event: {event_type}")
+
+          # Trigger auto-fix workflow
+          trigger_payload = {
+              "event_type": "crashlytics_alert",
+              "client_payload": {
+                  "crash_title": crash_title,
+                  "stack_trace": stack_trace,
+                  "version": version,
+                  "firebase_event_type": event_type
+              }
+          }
+
+          token = os.environ["GITHUB_TOKEN"]
+          req = urllib.request.Request(
+              "https://api.github.com/repos/WEAndroidDevTeam/Listify/dispatches",
+              data=json.dumps(trigger_payload).encode(),
+              headers={
+                  "Authorization": f"token {token}",
+                  "Accept": "application/vnd.github+json",
+                  "Content-Type": "application/json"
+              }
+          )
+          urllib.request.urlopen(req)
+          print("Auto-fix workflow triggered")
+          PYEOF
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PAYLOAD: ${{ toJson(github.event.client_payload) }}
+          EVENT_TYPE: ${{ github.event.action }}
