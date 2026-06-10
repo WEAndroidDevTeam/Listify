@@ -4,13 +4,14 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.view.isVisible
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import coil.load
+import coil.transform.RoundedCornersTransformation
 import com.listify.R
 import com.listify.databinding.FragmentProductDetailBinding
 import com.listify.domain.model.Product
@@ -25,9 +26,7 @@ class ProductDetailFragment : Fragment() {
     private val binding get() = _binding!!
     private val viewModel: ProductDetailViewModel by viewModels()
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
-    ): View {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentProductDetailBinding.inflate(inflater, container, false)
         return binding.root
     }
@@ -41,6 +40,9 @@ class ProductDetailFragment : Fragment() {
     private fun setupQuantityControls() {
         binding.btnIncrement.setOnClickListener { viewModel.incrementQuantity() }
         binding.btnDecrement.setOnClickListener { viewModel.decrementQuantity() }
+        binding.btnAddToCart.setOnClickListener {
+            Toast.makeText(requireContext(), "Added ${viewModel.quantity.value} item(s) to cart!", Toast.LENGTH_SHORT).show()
+        }
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.quantity.collect { binding.tvQuantity.text = it.toString() }
@@ -53,9 +55,9 @@ class ProductDetailFragment : Fragment() {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.uiState.collect { state ->
                     when (state) {
-                        is UiState.Loading -> { /* show shimmer in future */ }
+                        is UiState.Loading -> { /* skeleton future */ }
                         is UiState.Success -> bindProduct(state.data)
-                        is UiState.Error   -> { /* show error */ }
+                        is UiState.Error   -> Toast.makeText(requireContext(), state.message, Toast.LENGTH_LONG).show()
                     }
                 }
             }
@@ -64,9 +66,12 @@ class ProductDetailFragment : Fragment() {
 
     private fun bindProduct(product: Product) {
         binding.apply {
-            ivProductImage.load(product.imageUrl) { crossfade(true) }
+            ivProductImage.load(product.imageUrl) {
+                crossfade(300)
+                transformations(RoundedCornersTransformation(12f))
+            }
+            tvCategory.text = product.category.uppercase()
             tvProductName.text = product.title
-            tvCategory.text = product.category
             tvPrice.text = getString(R.string.price_format, product.price)
             tvDescription.text = product.description
             ratingBar.rating = product.rating.rate.toFloat()
@@ -74,8 +79,5 @@ class ProductDetailFragment : Fragment() {
         }
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
-    }
+    override fun onDestroyView() { super.onDestroyView(); _binding = null }
 }
