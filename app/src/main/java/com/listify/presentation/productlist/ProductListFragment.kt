@@ -25,13 +25,10 @@ class ProductListFragment : Fragment() {
     private var _binding: FragmentProductListBinding? = null
     private val binding get() = _binding!!
     private val viewModel: ProductListViewModel by viewModels()
-
     private lateinit var productAdapter: ProductAdapter
     private lateinit var skeletonAdapter: SkeletonAdapter
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
-    ): View {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentProductListBinding.inflate(inflater, container, false)
         return binding.root
     }
@@ -52,18 +49,11 @@ class ProductListFragment : Fragment() {
             findNavController().navigate(action)
         }
         skeletonAdapter = SkeletonAdapter(count = 6)
-
-        // GridLayoutManager: footer spans full width, products take 1 column each
         val layoutManager = GridLayoutManager(requireContext(), 2)
         layoutManager.spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
-            override fun getSpanSize(position: Int): Int {
-                return when (productAdapter.getItemViewType(position)) {
-                    1 -> 2  // LoadingFooter spans full width
-                    else -> 1
-                }
-            }
+            override fun getSpanSize(position: Int) =
+                if (productAdapter.getItemViewType(position) == 1) 2 else 1
         }
-
         binding.recyclerView.layoutManager = layoutManager
         binding.recyclerView.adapter = skeletonAdapter
         binding.recyclerView.isVisible = true
@@ -73,27 +63,22 @@ class ProductListFragment : Fragment() {
         binding.searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?) = false
             override fun onQueryTextChange(newText: String?): Boolean {
-                viewModel.updateSearchQuery(newText.orEmpty())
-                return true
+                viewModel.updateSearchQuery(newText.orEmpty()); return true
             }
         })
     }
 
     private fun setupRetry() {
-        binding.btnRetry.setOnClickListener { viewModel.loadProducts(reset = true) }
+        binding.layoutError.findViewById<View>(com.listify.R.id.btnRetry)
+            ?.setOnClickListener { viewModel.loadProducts(reset = true) }
     }
 
     private fun setupPagination() {
         binding.recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                if (dy <= 0) return // only trigger on downward scroll
-                val layoutManager = recyclerView.layoutManager as GridLayoutManager
-                val totalItems = layoutManager.itemCount
-                val lastVisible = layoutManager.findLastVisibleItemPosition()
-                // Trigger load when within 4 items of bottom
-                if (lastVisible >= totalItems - 4) {
-                    viewModel.loadNextPage()
-                }
+                if (dy <= 0) return
+                val lm = recyclerView.layoutManager as GridLayoutManager
+                if (lm.findLastVisibleItemPosition() >= lm.itemCount - 4) viewModel.loadNextPage()
             }
         })
     }
@@ -103,53 +88,42 @@ class ProductListFragment : Fragment() {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 launch {
                     viewModel.uiState.collect { state ->
+                        binding.recyclerView.isVisible = false
+                        binding.layoutEmpty.isVisible = false
+                        binding.layoutError.isVisible = false
                         when (state) {
                             is UiState.Loading -> {
                                 binding.recyclerView.adapter = skeletonAdapter
                                 binding.recyclerView.isVisible = true
-                                binding.groupError.isVisible = false
-                                binding.groupEmpty.isVisible = false
                             }
                             is UiState.Success -> {
-                                val paging = viewModel.pagingState.value
-                                if (binding.recyclerView.adapter != productAdapter) {
-                                    binding.recyclerView.adapter = productAdapter
+                                if (state.data.isEmpty()) {
+                                    binding.layoutEmpty.isVisible = true
+                                } else {
+                                    if (binding.recyclerView.adapter != productAdapter)
+                                        binding.recyclerView.adapter = productAdapter
+                                    productAdapter.submitProducts(state.data, viewModel.pagingState.value.isLoadingMore)
+                                    binding.recyclerView.isVisible = true
                                 }
-                                productAdapter.submitProducts(
-                                    products = state.data,
-                                    showLoading = paging.isLoadingMore
-                                )
-                                binding.recyclerView.isVisible = state.data.isNotEmpty()
-                                binding.groupEmpty.isVisible = state.data.isEmpty()
-                                binding.groupError.isVisible = false
                             }
                             is UiState.Error -> {
-                                binding.recyclerView.isVisible = false
-                                binding.groupError.isVisible = true
-                                binding.groupEmpty.isVisible = false
-                                binding.tvError.text = state.message
+                                binding.layoutError.isVisible = true
+                                binding.layoutError.findViewById<android.widget.TextView>(com.listify.R.id.tvErrorMessage)
+                                    ?.text = state.message
                             }
                         }
                     }
                 }
                 launch {
-                    // Re-render list when paging state changes (spinner show/hide)
                     viewModel.pagingState.collect { paging ->
-                        val current = viewModel.uiState.value
-                        if (current is UiState.Success) {
-                            productAdapter.submitProducts(
-                                products = current.data,
-                                showLoading = paging.isLoadingMore
-                            )
-                        }
+                        val s = viewModel.uiState.value
+                        if (s is UiState.Success && s.data.isNotEmpty())
+                            productAdapter.submitProducts(s.data, paging.isLoadingMore)
                     }
                 }
             }
         }
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
-    }
+    override fun onDestroyView() { super.onDestroyView(); _binding = null }
 }
