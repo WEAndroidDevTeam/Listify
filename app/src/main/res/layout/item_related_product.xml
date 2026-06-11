@@ -11,7 +11,7 @@
         android:orientation="vertical" android:padding="8dp">
         <ImageView android:id="@+id/ivImage" android:layout_width="match_parent"
             android:layout_height="100dp" android:scaleType="centerInside"
-            android:contentDescription="Related product"/>
+            android:contentDescription="@string/cd_related_product"/>
         <TextView android:id="@+id/tvName" android:layout_width="match_parent"
             android:layout_height="wrap_content" android:layout_marginTop="6dp"
             android:maxLines="2" android:ellipsize="end" android:textSize="11sp" android:textStyle="bold"/>
