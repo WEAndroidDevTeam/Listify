@@ -81,9 +81,6 @@ android {
         unitTests {
             isIncludeAndroidResources = true
             isReturnDefaultValues = true
-            all {
-                it.jvmArgs("-noverify", "-ea")
-            }
         }
     }
     buildFeatures {
