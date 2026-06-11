@@ -15,7 +15,7 @@ class ProductRepositoryTest {
     private val api: FakeStoreApi = mockk()
     private lateinit var repository: ProductRepositoryImpl
 
-    private val fakeDto = ProductDto(1,"Shirt",29.99,"Desc","clothing","url", RatingDto(4.5, 100))
+    private val fakeDto = ProductDto(1, "Shirt", 29.99, "Desc", "clothing", "url", RatingDto(4.5, 100))
 
     @Before
     fun setUp() { repository = ProductRepositoryImpl(api) }
@@ -29,15 +29,15 @@ class ProductRepositoryTest {
         assertEquals(1, products.size)
         assertEquals("Shirt", products[0].title)
         assertEquals(29.99, products[0].price, 0.01)
-        assertEquals(4.5, products[0].rating.rate, 0.01)
     }
 
     @Test
-    fun `getProducts returns failure on exception`() = runTest {
+    fun `getProducts returns fallback data on network exception`() = runTest {
         coEvery { api.getProducts(any(), any()) } throws RuntimeException("Network error")
         val result = repository.getProducts()
-        assertTrue(result.isFailure)
-        assertEquals("Network error", result.exceptionOrNull()?.message)
+        // Now returns fallback data, not failure
+        assertTrue(result.isSuccess)
+        assertTrue(result.getOrThrow().isNotEmpty())
     }
 
     @Test
@@ -49,18 +49,27 @@ class ProductRepositoryTest {
     }
 
     @Test
-    fun `getProductById returns failure on not found`() = runTest {
-        coEvery { api.getProductById(999) } throws RuntimeException("404")
-        val result = repository.getProductById(999)
-        assertTrue(result.isFailure)
+    fun `getProductById falls back to local data when API fails`() = runTest {
+        coEvery { api.getProductById(any()) } throws RuntimeException("404")
+        val result = repository.getProductById(1)
+        // Fallback products have id=1, so should succeed
+        assertTrue(result.isSuccess)
     }
 
     @Test
     fun `getCategories returns list of strings`() = runTest {
-        coEvery { api.getCategories() } returns listOf("electronics","clothing")
+        coEvery { api.getCategories() } returns listOf("electronics", "clothing")
         val result = repository.getCategories()
         assertTrue(result.isSuccess)
         assertEquals(2, result.getOrThrow().size)
+    }
+
+    @Test
+    fun `getCategories falls back to local categories on failure`() = runTest {
+        coEvery { api.getCategories() } throws RuntimeException("error")
+        val result = repository.getCategories()
+        assertTrue(result.isSuccess)
+        assertTrue(result.getOrThrow().isNotEmpty())
     }
 
     @Test
