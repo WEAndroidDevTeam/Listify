@@ -1,6 +1,5 @@
 package com.listify.data.repository
 
-import android.util.Log
 import com.listify.data.remote.api.FakeStoreApi
 import com.listify.data.remote.dto.toDomain
 import com.listify.domain.model.Product
@@ -15,7 +14,7 @@ class ProductRepositoryImpl @Inject constructor(
         try {
             api.getProducts(limit = limit).map { it.toDomain() }
         } catch (e: Exception) {
-            Log.w("ProductRepository", "API unavailable, using fallback data: ${e.message}")
+            // API unavailable — use local fallback
             FallbackProducts.items.take(limit)
         }
     }
@@ -24,7 +23,6 @@ class ProductRepositoryImpl @Inject constructor(
         try {
             api.getProductById(id).toDomain()
         } catch (e: Exception) {
-            Log.w("ProductRepository", "API unavailable, using fallback for id=$id")
             FallbackProducts.items.firstOrNull { it.id == id }
                 ?: throw NoSuchElementException("Product $id not found")
         }
@@ -34,7 +32,6 @@ class ProductRepositoryImpl @Inject constructor(
         try {
             api.getProductsByCategory(category, limit).map { it.toDomain() }
         } catch (e: Exception) {
-            Log.w("ProductRepository", "API unavailable, using fallback for category=$category")
             FallbackProducts.items.filter { it.category == category }.take(limit)
         }
     }
@@ -43,7 +40,6 @@ class ProductRepositoryImpl @Inject constructor(
         try {
             api.getCategories()
         } catch (e: Exception) {
-            Log.w("ProductRepository", "API unavailable, using fallback categories")
             FallbackProducts.categories
         }
     }

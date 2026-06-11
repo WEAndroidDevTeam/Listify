@@ -108,7 +108,15 @@ class ProductListViewModelTest {
 
     @Test
     fun `loadNextPage increments limit by PAGE_SIZE`() = runTest {
+        // Return exactly PAGE_SIZE products so hasReachedEnd stays false
+        val fullPage = (1..10).map { i ->
+            Product(i, "Product $i", i * 10.0, "Desc", "clothing", "url$i", Rating(4.0, 100))
+        }
+        coEvery { getProductsUseCase(any()) } returns Result.success(fullPage)
+        viewModel.loadProducts(reset = true)
         testDispatcher.scheduler.advanceUntilIdle()
+        // hasReachedEnd should be false since we returned exactly PAGE_SIZE
+        assertFalse(viewModel.pagingState.value.hasReachedEnd)
         val initialLimit = viewModel.pagingState.value.currentLimit
         viewModel.loadNextPage()
         testDispatcher.scheduler.advanceUntilIdle()
