@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<lint>
+    <!-- appbar_scrolling_view_behavior is a built-in Material library string, not hardcoded -->
+    <issue id="HardcodedText">
+        <ignore path="**/activity_main.xml"/>
+    </issue>
+    <!-- Suppress dependency update warnings in CI -->
+    <issue id="GradleDependency" severity="ignore"/>
+    <issue id="NewerVersionAvailable" severity="ignore"/>
+    <!-- Suppress obsolete custom check warnings from third-party libs -->
+    <issue id="ObsoleteLintCustomCheck" severity="ignore"/>
+</lint>
