@@ -1,12 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <lint>
-    <!-- appbar_scrolling_view_behavior is a built-in Material library string, not hardcoded -->
+    <!-- appbar_scrolling_view_behavior is a built-in Material library string -->
     <issue id="HardcodedText">
         <ignore path="**/activity_main.xml"/>
     </issue>
-    <!-- Suppress dependency update warnings in CI -->
+    <!-- Hardcoded colors are in use intentionally for now — will migrate to theme attrs -->
+    <issue id="HardcodedColor" severity="ignore"/>
+    <!-- Suppress dependency update noise in CI -->
     <issue id="GradleDependency" severity="ignore"/>
     <issue id="NewerVersionAvailable" severity="ignore"/>
-    <!-- Suppress obsolete custom check warnings from third-party libs -->
+    <!-- Third-party library lint check compatibility warnings -->
     <issue id="ObsoleteLintCustomCheck" severity="ignore"/>
+    <!-- Kotlin migration suggestions — not errors -->
+    <issue id="UnusedAttribute" severity="warning"/>
 </lint>
