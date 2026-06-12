@@ -59,7 +59,7 @@ jobs:
       - name: Open fix PR
         run: python3 .github/scripts/open_fix_pr.py
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
           JIRA_TICKET: ${{ steps.jira.outputs.ticket }}
           CRASH_TITLE: ${{ steps.crash.outputs.title }}
         continue-on-error: true
