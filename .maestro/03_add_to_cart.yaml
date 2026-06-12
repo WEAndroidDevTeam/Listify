@@ -1,0 +1,22 @@
+# Verifies the add to cart flow and quantity stepper
+appId: com.listify
+---
+- launchApp:
+    clearState: true
+- waitForAnimationToEnd:
+    timeout: 5000
+- tapOn:
+    id: "ivProductImage"
+    index: 0
+- assertVisible:
+    id: "btnAddToCart"
+# Increment quantity
+- tapOn:
+    id: "btnIncrement"
+- tapOn:
+    id: "btnIncrement"
+# Add to cart
+- tapOn:
+    id: "btnAddToCart"
+- assertVisible: "Added .* item.* to cart!"
+- takeScreenshot: added_to_cart

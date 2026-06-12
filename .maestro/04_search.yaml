@@ -1,0 +1,13 @@
+# Verifies search filters the product list
+appId: com.listify
+---
+- launchApp:
+    clearState: true
+- assertVisible:
+    id: "recyclerView"
+- tapOn:
+    id: "searchView"
+- inputText: "Shirt"
+- waitForAnimationToEnd:
+    timeout: 3000
+- takeScreenshot: search_results

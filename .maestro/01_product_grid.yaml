@@ -1,0 +1,9 @@
+# Verifies the app launches and the product grid renders
+appId: com.listify
+---
+- launchApp:
+    clearState: true
+- assertVisible:
+    id: "recyclerView"
+- assertVisible: "Search products…"
+- takeScreenshot: product_grid_loaded
