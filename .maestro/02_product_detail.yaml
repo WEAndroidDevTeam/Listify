@@ -1,0 +1,19 @@
+# Verifies tapping a product card opens the detail screen
+appId: com.listify
+---
+- launchApp:
+    clearState: true
+- assertVisible:
+    id: "recyclerView"
+# Wait for products to load (fallback data renders fast)
+- waitForAnimationToEnd:
+    timeout: 5000
+# Tap the first product card
+- tapOn:
+    id: "ivProductImage"
+    index: 0
+- assertVisible:
+    id: "btnAddToCart"
+- assertVisible: "Add to Cart"
+- assertVisible: "Description"
+- takeScreenshot: product_detail_open
